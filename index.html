@@ -152,13 +152,13 @@ const N = [
 // [upper, lower, name, pronunciation (Spanish spelling), text for the system voice]
 const L = [
  ["A","a","A","a","Ah"],["B","b","Be","be","Be"],["C","c","Ce","tse","Tse"],["D","d","De","de","De"],
- ["E","e","E","e","Eh"],["F","f","Ef","ef","Eff"],["G","g","Ge","ge","Ge"],["H","h","Ha","ja","Ha"],
+ ["E","e","E","e","Eh"],["F","f","Ef","ef","Eff"],["G","g","Ge","gue","Ge"],["H","h","Ha","ja","Ha"],
  ["I","i","I","i","Ih"],["J","j","Jot","iot","Jott"],["K","k","Ka","ka","Ka"],["L","l","El","el","Ell"],
  ["M","m","Em","em","Emm"],["N","n","En","en","Enn"],["O","o","O","o","Oh"],["P","p","Pe","pe","Pe"],
- ["Q","q","Ku","ku","Ku"],["R","r","Er","er","Err"],["S","s","Es","es","Ess"],["T","t","Te","te","Te"],
+ ["Q","q","Ku","ku","Ku"],["R","r","Er","er (throaty r)","Err"],["S","s","Es","es","Ess"],["T","t","Te","te","Te"],
  ["U","u","U","u","Uh"],["V","v","Fau","fau","Fau"],["W","w","We","ve","We"],["X","x","Ix","iks","Iks"],
- ["Y","y","Ypsilon","ýpsilon","Üpsilon"],["Z","z","Zet","tset","Zett"],
- ["Ä","ä","Ä","e abierta","Äh"],["Ö","ö","Ö","ö","Öh"],["Ü","ü","Ü","ü","Üh"],["ß","ß","Eszett","es-tset","Ess-Zett"]
+ ["Y","y","Ypsilon","üpsilon","Üpsilon"],["Z","z","Zet","tset","Zett"],
+ ["Ä","ä","Ä","ee","Äh"],["Ö","ö","Ö","ö","Öh"],["Ü","ü","Ü","ü","Üh"],["ß","ß","Eszett","es-tset","Ess-Zett"]
 ];
 // [German word, Spanish meaning]
 const WORDS = [
@@ -232,12 +232,13 @@ const SECS = {
         ["Umlauts and ß","Ä, Ö and Ü are vowels with two dots. ß (Eszett) sounds like a double s."]
       ],
       a:[["C and H","C is tse, not se. H is a soft Spanish j: ja."],
-         ["E and G","E is a pure Spanish e. G is always ge, like Spanish “gue”."]],
+         ["E and G","E is a pure Spanish e. G is always gue, like the Spanish “gue” in “guerra”."]],
       b:[["J is iot","It is not a Spanish j. Say “iot”, as in “yo” followed by a t."],
          ["K, L, M, N","They are ka, el, em and en. The vowel comes first in L, M and N."]],
-      c:[["V, W and Y","V is fau (it sounds like f), W is ve, and Y is ýpsilon with the stress on the first syllable."],
+      c:[["V, W and Y","V is fau (it sounds like f). W is ve: say it like the English v, with your upper teeth on your lower lip. Y is üpsilon, with the stress on the first syllable."],
+         ["The German R","R is said at the back of the throat, like a soft Spanish j, not rolled. The letter name is er."],
          ["X and Z","X is iks. Z is tset: it starts with the ts of “tsunami”."]],
-      d:[["The umlauts","Ä sounds like a Spanish e. Ö is an e said with your lips rounded as for o. Ü is an i said with your lips rounded as for u."],
+      d:[["The umlauts","Ä is a long, open Spanish e, like “ee” in “leer”. Ö is an e said with your lips rounded as for o. Ü is an i said with your lips rounded as for u."],
          ["The ß","Called Eszett. It sounds like a double s and appears in words like Straße (street)."]]
     },
     q:{n2w:"What is this letter called?", w2n:"Which letter is it?", hear:"Listen and pick the letter", type:"Write its name"},

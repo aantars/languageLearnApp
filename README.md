@@ -12,4 +12,3 @@ Live: https://aantars.github.io/languageLearnApp/
 - `index.html`: the app, ready to open or publish (GitHub Pages).
 - `index.template.html`: the same app without the embedded audio. `build_audio.py` fills in the number clips (needs espeak-ng and ffmpeg).
 - `GLOSSARY.md`: project vocabulary (Section, Range, Mode, Item, Dictation).
-- `HANDOFF.md` and `zahlen-0-20.html`: the original numbers-only version, kept for reference.

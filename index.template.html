@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Zahlen 0–20: German numbers mini-course</title>
+<title>LanguageLearnApp: German for Spanish speakers</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -90,8 +90,8 @@ div.field .ph{color:var(--muted);font-weight:400}
 div.field.ok{border-color:var(--good);color:var(--good);background:var(--good-bg)}
 div.field.no{border-color:var(--bad);color:var(--bad);background:var(--bad-bg)}
 .kb{margin-top:10px;display:grid;gap:6px}
-.kr{display:flex;gap:4px;justify-content:center}
-.key{flex:1;min-width:0;height:44px;border:1.5px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font:inherit;font-weight:600;font-size:19px;padding:0;touch-action:manipulation;cursor:pointer;-webkit-user-select:none;user-select:none}
+.kr{display:flex;gap:3px;justify-content:center}
+.key{flex:1;min-width:0;height:44px;border:1.5px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font:inherit;font-weight:600;font-size:18px;padding:0;touch-action:manipulation;cursor:pointer;-webkit-user-select:none;user-select:none}
 .key.wide{flex:1.5}
 .key:active{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
 .slots{display:flex;gap:6px;justify-content:center;margin:8px 0}
@@ -119,19 +119,26 @@ div.field.no{border-color:var(--bad);color:var(--bad);background:var(--bad-bg)}
 .num>span:last-child{min-width:0}
 .num .w{font-size:17px;overflow-wrap:anywhere}
 .num .p{overflow-wrap:anywhere}
+.navtop{display:flex;align-items:center;gap:12px;margin:0 0 12px}
+.back{border:1.5px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-weight:600;font-size:15px;padding:7px 14px;border-radius:999px;cursor:pointer}
+.navtop b{font-size:20px}
+.mode.last{border-color:var(--accent)}
 @media (prefers-reduced-motion:reduce){.bar i{transition:none}}
 </style>
 </head>
 <body>
 <main>
-  <h1>Zahlen 0–20</h1>
-  <p class="sub">Learn the German numbers and practice them.</p>
-  <div class="tabs" role="tablist">
-    <button role="tab" id="tab-learn" aria-selected="true">Learn</button>
-    <button role="tab" id="tab-practice" aria-selected="false">Practice</button>
+  <h1>LanguageLearnApp</h1>
+  <p class="sub" id="sub">German for Spanish speakers. Pick what you want to practice.</p>
+  <div id="nav" hidden>
+    <div class="navtop"><button class="back" id="home" type="button">← Home</button><b id="sectitle"></b></div>
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tab-learn" aria-selected="true">Learn</button>
+      <button role="tab" id="tab-practice" aria-selected="false">Practice</button>
+    </div>
+    <div class="chips" id="scope" role="group" aria-label="Range"></div>
+    <p class="hint" id="audiomsg" role="status" style="margin:0 0 12px"></p>
   </div>
-  <div class="chips" id="scope" role="group" aria-label="Number range"></div>
-  <p class="hint" id="audiomsg" role="status" style="margin:0 0 12px"></p>
   <div id="view"></div>
 </main>
 
@@ -142,36 +149,125 @@ const N = [
  ["dreizehn","drai-tsen"],["vierzehn","fiir-tsen"],["fünfzehn","fünf-tsen"],["sechzehn","sej-tsen"],
  ["siebzehn","siip-tsen"],["achtzehn","ajt-tsen"],["neunzehn","noin-tsen"],["zwanzig","tsvan-tsij"]
 ];
-const SCOPES = [
-  {id:"all", label:"0–20", from:0, to:20},
-  {id:"a", label:"0–6", from:0, to:6},
-  {id:"b2", label:"7–12", from:7, to:12},
-  {id:"c2", label:"13–20", from:13, to:20}
+// [upper, lower, name, pronunciation (Spanish spelling), text for the system voice]
+const L = [
+ ["A","a","A","a","Ah"],["B","b","Be","be","Be"],["C","c","Ce","tse","Tse"],["D","d","De","de","De"],
+ ["E","e","E","e","Eh"],["F","f","Ef","ef","Eff"],["G","g","Ge","ge","Ge"],["H","h","Ha","ja","Ha"],
+ ["I","i","I","i","Ih"],["J","j","Jot","iot","Jott"],["K","k","Ka","ka","Ka"],["L","l","El","el","Ell"],
+ ["M","m","Em","em","Emm"],["N","n","En","en","Enn"],["O","o","O","o","Oh"],["P","p","Pe","pe","Pe"],
+ ["Q","q","Ku","ku","Ku"],["R","r","Er","er","Err"],["S","s","Es","es","Ess"],["T","t","Te","te","Te"],
+ ["U","u","U","u","Uh"],["V","v","Fau","fau","Fau"],["W","w","We","ve","We"],["X","x","Ix","iks","Iks"],
+ ["Y","y","Ypsilon","ýpsilon","Üpsilon"],["Z","z","Zet","tset","Zett"],
+ ["Ä","ä","Ä","e abierta","Äh"],["Ö","ö","Ö","ö","Öh"],["Ü","ü","Ü","ü","Üh"],["ß","ß","Eszett","es-tset","Ess-Zett"]
 ];
-const TIPS = {
-  all:[
-    ["Two rules to remember","From 13 to 19 the pattern is unit + zehn (drei + zehn = dreizehn). 11 and 12 are special: learn them by heart."],
-    ["Key sounds","z sounds like the ts in Spanish “tsunami”, the v in vier sounds like f, and ü is a u said with your lips as if you were saying i."]
-  ],
-  a:[["The ü in fünf","Say a Spanish “i” and, without moving your tongue, round your lips as if saying “u”. That is ü."],
-     ["Watch out for zwei","Read it tsvai: z sounds like ts and w is a soft Spanish v."]],
-  b2:[["Elf and zwölf","They follow no pattern. They are the only two in this stretch you must memorize."],
-     ["The ch in acht","After a it sounds like a soft Spanish j, like in “ajo” but lighter."]],
-  c2:[["The -zehn pattern","Unit + zehn: drei + zehn, vier + zehn, fünf + zehn, acht + zehn, neun + zehn."],
-     ["Two exceptions","Sechzehn drops the s of sechs, and siebzehn drops the en of sieben. And 20 is zwanzig, ending in -zig."]]
+// [German word, Spanish meaning]
+const WORDS = [
+ ["Haus","casa"],["Mutter","madre"],["Vater","padre"],["Bruder","hermano"],["Schwester","hermana"],
+ ["Kind","niño"],["Freund","amigo"],["Frau","mujer"],["Mann","hombre"],["Mädchen","niña"],
+ ["Hund","perro"],["Katze","gato"],["Vogel","pájaro"],["Fisch","pez"],["Pferd","caballo"],
+ ["Kuh","vaca"],["Bär","oso"],["Löwe","león"],["Brot","pan"],["Milch","leche"],
+ ["Wasser","agua"],["Bier","cerveza"],["Wein","vino"],["Kaffee","café"],["Tee","té"],
+ ["Apfel","manzana"],["Äpfel","manzanas"],["Käse","queso"],["Fleisch","carne"],["Suppe","sopa"],
+ ["Salz","sal"],["Zucker","azúcar"],["Ei","huevo"],["Reis","arroz"],["Tisch","mesa"],
+ ["Stuhl","silla"],["Bett","cama"],["Fenster","ventana"],["Tür","puerta"],["Buch","libro"],
+ ["Heft","cuaderno"],["Stift","bolígrafo"],["Schule","colegio"],["Lehrer","profesor"],["Auto","coche"],
+ ["Zug","tren"],["Bus","autobús"],["Straße","calle"],["Stadt","ciudad"],["Dorf","pueblo"],
+ ["Land","país"],["Meer","mar"],["Berg","montaña"],["Wald","bosque"],["Baum","árbol"],
+ ["Blume","flor"],["Sonne","sol"],["Mond","luna"],["Regen","lluvia"],["Schnee","nieve"],
+ ["Wind","viento"],["Himmel","cielo"],["Feuer","fuego"],["Erde","tierra"],["Jahr","año"],
+ ["Monat","mes"],["Woche","semana"],["Tag","día"],["Nacht","noche"],["Abend","tarde"],
+ ["Zeit","tiempo"],["Uhr","reloj"],["Geld","dinero"],["Arbeit","trabajo"],["Spiel","juego"],
+ ["Lied","canción"],["Hand","mano"],["Kopf","cabeza"],["Auge","ojo"],["Ohr","oreja"],
+ ["Nase","nariz"],["Mund","boca"],["Fuß","pie"],["Herz","corazón"],["Haar","pelo"],
+ ["Tasche","bolso"],["Brille","gafas"],["Schuh","zapato"],["Hose","pantalón"],["Mütze","gorro"],
+ ["Küche","cocina"],["Garten","jardín"],["Brücke","puente"],["Möbel","muebles"],["Gruß","saludo"],
+ ["Größe","tamaño"],["süß","dulce"],["schön","bonito"],["grün","verde"],["weiß","blanco"]
+];
+const SECS = {
+  numbers:{
+    title:"Numbers", blurb:"Zahlen 0–20. Numbers, listening and dictations.",
+    count:21, disp:i=>String(i), name:i=>N[i][0], pron:i=>N[i][1],
+    ranges:[
+      {id:"all", label:"0–20", from:0, to:20},
+      {id:"a", label:"0–6", from:0, to:6},
+      {id:"b2", label:"7–12", from:7, to:12},
+      {id:"c2", label:"13–20", from:13, to:20}
+    ],
+    tips:{
+      all:[
+        ["Two rules to remember","From 13 to 19 the pattern is unit + zehn (drei + zehn = dreizehn). 11 and 12 are special: learn them by heart."],
+        ["Key sounds","z sounds like the ts in Spanish “tsunami”, the v in vier sounds like f, and ü is a u said with your lips as if you were saying i."]
+      ],
+      a:[["The ü in fünf","Say a Spanish “i” and, without moving your tongue, round your lips as if saying “u”. That is ü."],
+         ["Watch out for zwei","Read it tsvai: z sounds like ts and w is a soft Spanish v."]],
+      b2:[["Elf and zwölf","They follow no pattern. They are the only two in this stretch you must memorize."],
+         ["The ch in acht","After a it sounds like a soft Spanish j, like in “ajo” but lighter."]],
+      c2:[["The -zehn pattern","Unit + zehn: drei + zehn, vier + zehn, fünf + zehn, acht + zehn, neun + zehn."],
+         ["Two exceptions","Sechzehn drops the s of sechs, and siebzehn drops the en of sieben. And 20 is zwanzig, ending in -zig."]]
+    },
+    q:{n2w:"How do you say it in German?", w2n:"Which number is it?", hear:"Listen and pick the number", type:"Write it in German"},
+    hint:"Tap a card to hear the pronunciation. The audio is a synthetic voice, so it sounds a bit robotic. The written pronunciation is approximate and uses Spanish spelling, for Spanish speakers.",
+    modes:[
+      {id:"n2w", title:"Number → word", desc:"You see the digits and pick the German word."},
+      {id:"w2n", title:"Word → number", desc:"You see the word and pick the digits."},
+      {id:"hear", title:"Listen", desc:"You hear the number and pick the digits."},
+      {id:"type", title:"Type the word", desc:"You see the digits and type the German word."},
+      {id:"dict9", title:"Dictation: 9 digits", desc:"You hear a 9-digit number, one digit at a time, like a phone number. Type it in. You can change the speed. 5 numbers per round."},
+      {id:"dictn", title:"Dictation: 5 numbers", desc:"You hear 5 random numbers from 0 to 20 and type them in order. 3 dictations per round."}
+    ]
+  },
+  alphabet:{
+    title:"Alphabet", blurb:"Das Alphabet. 26 letters plus Ä, Ö, Ü and ß, with spelling dictation.",
+    count:30, disp:i=>L[i][0]===L[i][1]?L[i][0]:L[i][0]+L[i][1], name:i=>L[i][2], pron:i=>L[i][3],
+    ranges:[
+      {id:"all", label:"All 30", from:0, to:29},
+      {id:"a", label:"A–H", from:0, to:7},
+      {id:"b", label:"I–P", from:8, to:15},
+      {id:"c", label:"Q–Z", from:16, to:25},
+      {id:"d", label:"Ä Ö Ü ß", from:26, to:29}
+    ],
+    tips:{
+      all:[
+        ["Letter names","Most letter names are short: be, de, ge, pe, te. Watch out for the ones that differ from Spanish: C is tse, H is ja, J is iot, V is fau and W is ve."],
+        ["Umlauts and ß","Ä, Ö and Ü are vowels with two dots. ß (Eszett) sounds like a double s."]
+      ],
+      a:[["C and H","C is tse, not se. H is a soft Spanish j: ja."],
+         ["E and G","E is a pure Spanish e. G is always ge, like Spanish “gue”."]],
+      b:[["J is iot","It is not a Spanish j. Say “iot”, as in “yo” followed by a t."],
+         ["K, L, M, N","They are ka, el, em and en. The vowel comes first in L, M and N."]],
+      c:[["V, W and Y","V is fau (it sounds like f), W is ve, and Y is ýpsilon with the stress on the first syllable."],
+         ["X and Z","X is iks. Z is tset: it starts with the ts of “tsunami”."]],
+      d:[["The umlauts","Ä sounds like a Spanish e. Ö is an e said with your lips rounded as for o. Ü is an i said with your lips rounded as for u."],
+         ["The ß","Called Eszett. It sounds like a double s and appears in words like Straße (street)."]]
+    },
+    q:{n2w:"What is this letter called?", w2n:"Which letter is it?", hear:"Listen and pick the letter", type:"Write its name"},
+    hint:"Tap a card to hear the letter. The voice is your device’s German voice. The written pronunciation is approximate and uses Spanish spelling, for Spanish speakers.",
+    modes:[
+      {id:"n2w", title:"Letter → name", desc:"You see the letter and pick its German name."},
+      {id:"w2n", title:"Name → letter", desc:"You see the name and pick the letter."},
+      {id:"hear", title:"Listen", desc:"You hear the letter and pick it."},
+      {id:"type", title:"Type the name", desc:"You see the letter and type its German name."},
+      {id:"spell", title:"Spelling dictation", desc:"You hear a word spelled letter by letter and type it. Use ae, oe, ue and ss if you cannot type ä, ö, ü and ß. You can change the speed. 5 words per round. This mode ignores the range."}
+    ]
+  }
 };
 const AUDIO = [/* 21 data URIs */];
-const st = {tab:"learn", scope:"all", quiz:null, best:{}};
-try{ st.best = JSON.parse(localStorage.getItem("zahlen-best")||"{}"); }catch(e){}
+const st = {sec:null, tab:"learn", scope:"all", quiz:null};
+let lastSec = null;
+try{ lastSec = localStorage.getItem("llapp-section"); }catch(e){}
 
 const $ = s => document.querySelector(s);
-const pool = () => { const s = SCOPES.find(x=>x.id===st.scope); return Array.from({length:s.to-s.from+1},(_,i)=>s.from+i); };
+const S = () => SECS[st.sec];
+const range = () => S().ranges.find(x=>x.id===st.scope);
+const pool = () => { const s = range(); return Array.from({length:s.to-s.from+1},(_,i)=>s.from+i); };
 const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
 const esc = s => String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-const norm = s => s.toLowerCase().trim().replace(/ü/g,"u").replace(/ö/g,"o").replace(/ue/g,"u").replace(/oe/g,"o").replace(/\s+/g,"");
+const norm = s => s.toLowerCase().trim().replace(/ä/g,"a").replace(/ö/g,"o").replace(/ü/g,"u").replace(/ß/g,"ss").replace(/ae/g,"a").replace(/oe/g,"o").replace(/ue/g,"u").replace(/\s+/g,"");
 
 const isDict = m => m==="dict9" || m==="dictn";
-const roundLen = m => m==="dictn" ? 3 : isDict(m) ? 5 : 10;
+const isAuto = m => isDict(m) || m==="spell";
+const isTyping = m => m==="type" || m==="spell";
+const roundLen = m => m==="dictn" ? 3 : isAuto(m) ? 5 : 10;
 const canSpeak = "speechSynthesis" in window;
 let voice = null;
 function loadVoice(){ if(!canSpeak) return; const v = speechSynthesis.getVoices().find(v=>/^de/i.test(v.lang)); if(v) voice=v; }
@@ -180,18 +276,19 @@ let lastU = null;
 function audioMsg(t){ const el=document.getElementById("audiomsg"); if(el) el.textContent=t; }
 let clip = null;
 function say(n){
+  if(st.sec==="alphabet"){ audioMsg(""); sayTTS(L[n][4]); return; }
   audioMsg("");
   try{
     if(clip){ clip.pause(); }
     clip = new Audio(AUDIO[n]);
     clip.volume = 1;
     const pr = clip.play();
-    if(pr && pr.catch) pr.catch(() => sayTTS(n));
+    if(pr && pr.catch) pr.catch(() => sayTTS(N[n][0]));
     return;
   }catch(e){}
-  sayTTS(n);
+  sayTTS(N[n][0]);
 }
-function sayTTS(n){
+function sayTTS(text){
   if(!canSpeak){ audioMsg("This browser does not support audio. Use the written pronunciation."); return; }
   try{
     const synth = window.speechSynthesis;
@@ -199,7 +296,7 @@ function sayTTS(n){
     const all = synth.getVoices();
     if(all.length && !voice){ audioMsg("Your device has no German voice installed. You can add one in your system language or voice settings."); }
     synth.cancel();
-    const u = new SpeechSynthesisUtterance(N[n][0]);
+    const u = new SpeechSynthesisUtterance(text);
     u.lang = "de-DE"; u.rate = .85; u.volume = 1;
     if(voice) u.voice = voice;
     let started = false;
@@ -214,42 +311,47 @@ function sayTTS(n){
   }catch(e){ audioMsg("Audio could not be played on this device."); }
 }
 
+function renderHome(){
+  $("#nav").hidden = true;
+  $("#sub").hidden = false;
+  document.body.classList.remove("quiz");
+  $("#view").innerHTML = `<div class="modes">${Object.entries(SECS).map(([id,s])=>`<button class="mode ${id===lastSec?"last":""}" data-sec="${id}"><b>${s.title}</b><span>${s.blurb}</span>${id===lastSec?"<span> Last used</span>":""}</button>`).join("")}</div>`;
+  document.querySelectorAll(".mode").forEach(b=>b.onclick=()=>openSection(b.dataset.sec));
+}
+function openSection(id){
+  st.sec = id; st.tab = "learn"; st.scope = "all"; st.quiz = null; lastSec = id;
+  try{ localStorage.setItem("llapp-section", id); }catch(e){}
+  audioMsg("");
+  render(); window.scrollTo(0,0);
+}
+function goHome(){ st.sec = null; st.quiz = null; render(); window.scrollTo(0,0); }
+
 function renderScope(){
-  $("#scope").innerHTML = SCOPES.map(s=>`<button class="chip" data-s="${s.id}" aria-pressed="${s.id===st.scope}">${s.label}</button>`).join("");
+  $("#scope").innerHTML = S().ranges.map(s=>`<button class="chip" data-s="${s.id}" aria-pressed="${s.id===st.scope}">${s.label}</button>`).join("");
   $("#scope").querySelectorAll("button").forEach(b=>b.onclick=()=>{st.scope=b.dataset.s; st.quiz=null; render();});
 }
 
 function renderLearn(){
-  const nums = pool();
-  const tips = TIPS[st.scope];
+  const sec = S(), items = pool();
+  const tips = sec.tips[st.scope];
   $("#view").innerHTML = `
-    <div class="grid">${nums.map(n=>`
-      <button class="num" data-n="${n}" aria-label="${n}, ${N[n][0]}. Tap to listen">
-        <span class="d">${n}</span>
-        <span><span class="w">${N[n][0]}</span><br><span class="p">${N[n][1]}</span></span>
+    <div class="grid">${items.map(n=>`
+      <button class="num" data-n="${n}" aria-label="${sec.disp(n)}, ${sec.name(n)}. Tap to listen">
+        <span class="d">${sec.disp(n)}</span>
+        <span><span class="w">${sec.name(n)}</span><br><span class="p">${sec.pron(n)}</span></span>
       </button>`).join("")}
     </div>
-    <p class="hint">Tap a card to hear the pronunciation. The audio is a synthetic voice, so it sounds a bit robotic. The written pronunciation is approximate and uses Spanish spelling, for Spanish speakers.</p>
+    <p class="hint">${sec.hint}</p>
     ${tips.map(t=>`<div class="tip"><strong>${t[0]}</strong>${t[1]}</div>`).join("")}
     <button class="cta" id="go">Practice this range</button>`;
   document.querySelectorAll(".num").forEach(b=>b.onclick=()=>say(+b.dataset.n));
   $("#go").onclick=()=>setTab("practice");
 }
 
-const MODES = [
-  {id:"n2w", title:"Number → word", desc:"You see the digits and pick the German word."},
-  {id:"w2n", title:"Word → number", desc:"You see the word and pick the digits."},
-  {id:"hear", title:"Listen", desc:"You hear the number and pick the digits."},
-  {id:"type", title:"Type the word", desc:"You see the digits and type the German word."},
-  {id:"dict9", title:"Dictation: 9 digits", desc:"You hear a 9-digit number, one digit at a time, like a phone number. Type it in. You can change the speed. 5 numbers per round."},
-  {id:"dictn", title:"Dictation: 5 numbers", desc:"You hear 5 random numbers from 0 to 20 and type them in order. 3 dictations per round."}
-];
-
 function renderMenu(){
-  const modes = MODES;
-  const sc = SCOPES.find(x=>x.id===st.scope).label;
-  $("#view").innerHTML = `<p class="q">Range: ${sc}. Each round has 10 questions.</p>
-  <div class="modes">${modes.map(m=>`<button class="mode" data-m="${m.id}"><b>${m.title}</b><span>${m.desc}</span>${st.best[m.id+st.scope]!=null?`<span> Best: ${st.best[m.id+st.scope]}/${roundLen(m.id)}</span>`:""}</button>`).join("")}</div>`;
+  const sec = S();
+  $("#view").innerHTML = `<p class="q">Range: ${range().label}. Each round has 10 questions.</p>
+  <div class="modes">${sec.modes.map(m=>`<button class="mode" data-m="${m.id}"><b>${m.title}</b><span>${m.desc}</span></button>`).join("")}</div>`;
   document.querySelectorAll(".mode").forEach(b=>b.onclick=()=>startQuiz(b.dataset.m));
 }
 
@@ -263,10 +365,11 @@ function startQuiz(mode){
       ? Array.from({length:5},()=>Math.floor(Math.random()*21))
       : Array.from({length:len},()=>Math.floor(Math.random()*10)).join(""));
   }
+  if(mode==="spell") st.quiz.qs = shuffle(WORDS.map((_,i)=>i)).slice(0,roundLen(mode));
   document.body.classList.add("quiz");
   renderQuiz();
   if(mode==="hear") say(st.quiz.qs[0]);
-  if(isDict(mode)) dictPlay();
+  if(isAuto(mode)) autoPlay();
 }
 
 function options(n){
@@ -274,31 +377,35 @@ function options(n){
   return shuffle([n,...others]);
 }
 
+function kbHTML(){
+  const rows = ["qwertzuiopü","asdfghjklöä","yxcvbnmß"];
+  return rows.map((r,ri)=>`<div class="kr">${[...r].map(c=>`<button type="button" class="key" data-k="${c}">${c}</button>`).join("")}${ri===2?`<button type="button" class="key wide" data-k="back" aria-label="Delete">⌫</button>`:""}</div>`).join("");
+}
+
 function renderQuiz(){
-  const q = st.quiz;
+  const q = st.quiz, sec = S();
   if(q.i>=q.qs.length) return renderResult();
   if(isDict(q.mode)) return renderDict();
+  if(q.mode==="spell") return renderSpell();
   const n = q.qs[q.i];
   const m = q.mode;
   let prompt="", body="";
   if(m==="n2w"){
-    prompt = `<p class="q">How do you say it in German?</p><div class="big">${n}</div>`;
+    prompt = `<p class="q">${sec.q.n2w}</p><div class="big">${sec.disp(n)}</div>`;
     q.opts = q.opts && q.optsFor===q.i ? q.opts : options(n);
-    body = `<div class="opts">${q.opts.map(o=>optBtn(o,N[o][0],n)).join("")}</div>`;
+    body = `<div class="opts">${q.opts.map(o=>optBtn(o,sec.name(o),n)).join("")}</div>`;
   } else if(m==="w2n"){
-    prompt = `<p class="q">Which number is it?</p><div class="bigw">${N[n][0]}</div>`;
+    prompt = `<p class="q">${sec.q.w2n}</p><div class="bigw">${sec.name(n)}</div>`;
     q.opts = q.opts && q.optsFor===q.i ? q.opts : options(n);
-    body = `<div class="opts">${q.opts.map(o=>optBtn(o,o,n)).join("")}</div>`;
+    body = `<div class="opts">${q.opts.map(o=>optBtn(o,sec.disp(o),n)).join("")}</div>`;
   } else if(m==="hear"){
-    prompt = `<p class="q">Listen and pick the number</p><button class="play" id="play">▶ Listen</button>`;
+    prompt = `<p class="q">${sec.q.hear}</p><button class="play" id="play">▶ Listen</button>`;
     q.opts = q.opts && q.optsFor===q.i ? q.opts : options(n);
-    body = `<div class="opts" style="margin-top:18px">${q.opts.map(o=>optBtn(o,o,n)).join("")}</div>`;
+    body = `<div class="opts" style="margin-top:18px">${q.opts.map(o=>optBtn(o,sec.disp(o),n)).join("")}</div>`;
   } else {
-    prompt = `<p class="q">Write it in German</p><div class="big">${n}</div>`;
-    const rows = ["qwertzuiop","asdfghjkl","yxcvbnmüö"];
-    const kb = rows.map((r,ri)=>`<div class="kr">${[...r].map(c=>`<button type="button" class="key" data-k="${c}">${c}</button>`).join("")}${ri===2?`<button type="button" class="key wide" data-k="back" aria-label="Delete">⌫</button>`:""}</div>`).join("");
+    prompt = `<p class="q">${sec.q.type}</p><div class="big">${sec.disp(n)}</div>`;
     body = `<div class="field ${q.done?(q.ok?"ok":"no"):""}" id="ans" aria-live="polite">${q.typed?esc(q.typed):'<span class="ph">…</span>'}</div>
-            ${q.done?"":`<div class="kb" id="kb">${kb}</div><button type="button" class="cta" id="check">Check</button>`}`;
+            ${q.done?"":`<div class="kb" id="kb">${kbHTML()}</div><button type="button" class="cta" id="check">Check</button>`}`;
   }
   q.optsFor = q.i;
   const fb = q.done ? fbHTML(q,n) : "";
@@ -316,14 +423,16 @@ function renderQuiz(){
 }
 
 function fbHTML(q,n){
+  const sec = S();
+  const shown = q.mode==="spell" ? `${WORDS[n][0]} = ${WORDS[n][1]}` : `${sec.disp(n)} = ${sec.name(n)} (${sec.pron(n)})`;
   return `<div class="fb ${q.ok?"ok":"no"}"><div>${q.ok?"Correct!":"Not quite. The answer is:"}
-      <small>${n} = ${N[n][0]} (${N[n][1]})</small></div>
+      <small>${shown}</small></div>
       <button type="button" class="cta" id="next">${q.i===q.qs.length-1?"Result":"Next"}</button></div>`;
 }
 function wireNext(){
   const q = st.quiz, b = $("#next");
   if(!b) return;
-  b.onclick=()=>{ q.i++; q.done=false; q.typed=""; q.vals=null; q.cur=0; renderQuiz(); if(q.mode==="hear"&&q.i<q.qs.length) say(q.qs[q.i]); if(isDict(q.mode)&&q.i<q.qs.length) dictPlay(); };
+  b.onclick=()=>{ q.i++; q.done=false; q.typed=""; q.vals=null; q.cur=0; renderQuiz(); if(q.mode==="hear"&&q.i<q.qs.length) say(q.qs[q.i]); if(isAuto(q.mode)&&q.i<q.qs.length) autoPlay(); };
 }
 function optBtn(o,label,n){
   const q = st.quiz;
@@ -346,7 +455,7 @@ function showTyped(){
   el.innerHTML = q.typed ? esc(q.typed) : '<span class="ph">…</span>';
 }
 function press(k){
-  const q = st.quiz; if(!q || q.mode!=="type" || q.done) return;
+  const q = st.quiz; if(!q || !isTyping(q.mode) || q.done) return;
   q.typed = q.typed || "";
   if(k==="back") q.typed = q.typed.slice(0,-1);
   else if(q.typed.length<14) q.typed += k;
@@ -356,7 +465,9 @@ function checkTyped(){
   const q = st.quiz; if(!q || q.done) return;
   const v = q.typed || ""; if(!v.trim()) return;
   const n = q.qs[q.i];
-  finish(norm(v)===norm(N[n][0]), n);
+  const target = q.mode==="spell" ? WORDS[n][0] : S().name(n);
+  finish(norm(v)===norm(target), n);
+  if(q.mode==="spell") stopDict();
   const ans = $("#ans"); ans.classList.add(q.ok?"ok":"no");
   const kb = $("#kb"); if(kb) kb.remove();
   const chk = $("#check"); if(chk) chk.remove();
@@ -366,12 +477,12 @@ function checkTyped(){
 }
 document.addEventListener("keydown", e=>{
   const q = st.quiz;
-  if(!q || st.tab!=="practice" || e.ctrlKey || e.metaKey || e.altKey) return;
-  if(q.mode==="type"){
+  if(!q || !st.sec || st.tab!=="practice" || e.ctrlKey || e.metaKey || e.altKey) return;
+  if(isTyping(q.mode)){
     if(e.key==="Enter"){ e.preventDefault(); if(q.done){ const b=$("#next"); if(b) b.click(); } else checkTyped(); return; }
     if(q.done) return;
     if(e.key==="Backspace"){ e.preventDefault(); press("back"); }
-    else if(/^[a-zöü]$/i.test(e.key)){ e.preventDefault(); press(e.key.toLowerCase()); }
+    else if(/^[a-zäöüß]$/i.test(e.key)){ e.preventDefault(); press(e.key.toLowerCase()); }
   } else if(isDict(q.mode)){
     if(e.key==="Enter"){ e.preventDefault(); if(q.done){ const b=$("#next"); if(b) b.click(); } else dpress("go"); return; }
     if(q.done) return;
@@ -384,7 +495,8 @@ document.addEventListener("keydown", e=>{
 // ---------- Dictation modes ----------
 const DCFG = {
   dict9: {len:9, gap:900,  title:"Listen and type the 9-digit number"},
-  dictn: {len:5, gap:1000, title:"Listen and type the 5 numbers"}
+  dictn: {len:5, gap:1000, title:"Listen and type the 5 numbers"},
+  spell: {gap:700, title:"Listen to the spelling and type the word"}
 };
 const SPEEDS = {
   slow:  {label:"Slow",      rate:.85, gap:1.5},
@@ -393,14 +505,14 @@ const SPEEDS = {
   vfast: {label:"Very fast", rate:1.5, gap:.22},
   ufast: {label:"Ultra fast", rate:1.7, gap:.12}
 };
-const DEFSPEED = {dict9:"vfast", dictn:"normal"};
+const DEFSPEED = {dict9:"vfast", dictn:"normal", spell:"normal"};
 let spdPref = {};
 try{ spdPref = JSON.parse(localStorage.getItem("zahlen-speed")||"{}"); }catch(e){}
 const getSpeed = m => SPEEDS[spdPref[m]] ? spdPref[m] : DEFSPEED[m];
 let dAudio = null, dTok = 0;
 const wait = ms => new Promise(r=>setTimeout(r,ms));
 function setDots(k){ document.querySelectorAll("#dots i").forEach((el,i)=>el.classList.toggle("on", i<k)); }
-function stopDict(){ dTok++; if(dAudio){ try{ dAudio.pause(); }catch(e){} } setDots(0); }
+function stopDict(){ dTok++; if(dAudio){ try{ dAudio.pause(); }catch(e){} } if(canSpeak){ try{ speechSynthesis.cancel(); }catch(e){} } setDots(0); }
 function playClip(el,d,rate){
   return new Promise(res=>{
     let fin_=false;
@@ -410,6 +522,23 @@ function playClip(el,d,rate){
     setTimeout(fin,3000);
   });
 }
+function speakAsync(text,rate){
+  return new Promise(res=>{
+    let fin_=false;
+    const fin=()=>{ if(!fin_){ fin_=true; res(); } };
+    try{
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = "de-DE"; u.rate = rate; u.volume = 1;
+      if(voice) u.voice = voice;
+      u.onend = fin; u.onerror = fin;
+      lastU = u;
+      speechSynthesis.resume();
+      speechSynthesis.speak(u);
+    }catch(e){ fin(); }
+    setTimeout(fin,3500);
+  });
+}
+const autoPlay = () => st.quiz && st.quiz.mode==="spell" ? spellPlay() : dictPlay();
 async function dictPlay(){
   const q = st.quiz; if(!q || !isDict(q.mode) || q.i>=q.qs.length) return;
   stopDict();
@@ -422,6 +551,29 @@ async function dictPlay(){
     if(my!==dTok) return;
     setDots(i+1);
     await playClip(dAudio, items[i], sp.rate);
+    if(my!==dTok) return;
+    await wait(Math.round(cfg.gap*sp.gap));
+  }
+  if(my!==dTok) return;
+  setDots(0);
+  const b2 = $("#dplay"); if(b2) b2.textContent = "↻ Listen again";
+}
+async function spellPlay(){
+  const q = st.quiz; if(!q || q.mode!=="spell" || q.i>=q.qs.length) return;
+  if(!canSpeak){ audioMsg("This browser does not support audio, so the spelling cannot be played."); return; }
+  stopDict();
+  loadVoice();
+  if(speechSynthesis.getVoices().length && !voice) audioMsg("Your device has no German voice installed. You can add one in your system language or voice settings.");
+  else audioMsg("");
+  const my = dTok, cfg = DCFG.spell, sp = SPEEDS[getSpeed("spell")];
+  const letters = [...WORDS[q.qs[q.i]][0].toUpperCase()];
+  const btn = $("#dplay"); if(btn) btn.textContent = "Playing…";
+  await wait(300);
+  for(let i=0;i<letters.length;i++){
+    if(my!==dTok) return;
+    setDots(i+1);
+    const idx = L.findIndex(l=>l[0]===letters[i]);
+    await speakAsync(idx>=0 ? L[idx][4] : letters[i], sp.rate);
     if(my!==dTok) return;
     await wait(Math.round(cfg.gap*sp.gap));
   }
@@ -490,6 +642,17 @@ function dcheck(){
       <button type="button" class="cta" id="next">${q.i===q.qs.length-1?"Result":"Next"}</button></div>`;
   wireNext();
 }
+function speedSelect(mode){
+  return `<label class="spd">Speed <select id="spd" aria-label="Dictation speed">${Object.entries(SPEEDS).map(([k,v])=>`<option value="${k}" ${k===getSpeed(mode)?"selected":""}>${v.label}</option>`).join("")}</select></label>`;
+}
+function wireSpeed(mode){
+  $("#spd").onchange = e => {
+    spdPref[mode] = e.target.value;
+    try{ localStorage.setItem("zahlen-speed", JSON.stringify(spdPref)); }catch(err){}
+    e.target.blur();
+    autoPlay();
+  };
+}
 function renderDict(){
   const q = st.quiz, cfg = DCFG[q.mode], five = q.mode==="dictn";
   if(five && !q.vals){ q.vals = ["","","","",""]; q.cur = 0; }
@@ -506,8 +669,7 @@ function renderDict(){
     <div class="bar"><i style="width:${(q.i/q.qs.length)*100}%"></i></div>
     <div class="prompt" style="margin:10px 0 6px">
       <p class="q">${cfg.title}</p>
-      <div class="prow"><button type="button" class="play" id="dplay">▶ Listen</button>
-        <label class="spd">Speed <select id="spd" aria-label="Dictation speed">${Object.entries(SPEEDS).map(([k,v])=>`<option value="${k}" ${k===getSpeed(q.mode)?"selected":""}>${v.label}</option>`).join("")}</select></label></div>
+      <div class="prow"><button type="button" class="play" id="dplay">▶ Listen</button>${speedSelect(q.mode)}</div>
       <div class="dots" id="dots" aria-hidden="true">${"<i></i>".repeat(cfg.len)}</div>
     </div>
     <div class="${slotCls}" id="slots">${"<span class=\"slot\"></span>".repeat(cfg.len)}</div>
@@ -517,30 +679,44 @@ function renderDict(){
   document.querySelectorAll("#pad .key").forEach(k=>k.onclick=()=>dpress(k.dataset.d));
   if(five) document.querySelectorAll("#slots .slot").forEach((el,i)=>el.onclick=()=>{ if(!q.done){ q.cur=i; showSlots(); } });
   $("#dplay").onclick = dictPlay;
-  $("#spd").onchange = e => {
-    spdPref[q.mode] = e.target.value;
-    try{ localStorage.setItem("zahlen-speed", JSON.stringify(spdPref)); }catch(err){}
-    e.target.blur();
-    dictPlay();
-  };
+  wireSpeed(q.mode);
   $("#quit").onclick = ()=>{ st.quiz=null; render(); };
   showSlots();
 }
+function renderSpell(){
+  const q = st.quiz, n = q.qs[q.i];
+  $("#view").innerHTML = `
+    <div class="meta"><span>Word ${q.i+1} of ${q.qs.length}</span><span>Correct: <span id="scoreval">${q.score}</span></span></div>
+    <div class="bar"><i style="width:${(q.i/q.qs.length)*100}%"></i></div>
+    <div class="prompt" style="margin:10px 0 6px">
+      <p class="q">${DCFG.spell.title}</p>
+      <div class="prow"><button type="button" class="play" id="dplay">▶ Listen</button>${speedSelect("spell")}</div>
+      <div class="dots" id="dots" aria-hidden="true">${"<i></i>".repeat(WORDS[n][0].length)}</div>
+    </div>
+    <div class="field ${q.done?(q.ok?"ok":"no"):""}" id="ans" aria-live="polite">${q.typed?esc(q.typed):'<span class="ph">…</span>'}</div>
+    ${q.done?"":`<div class="kb" id="kb">${kbHTML()}</div><button type="button" class="cta" id="check">Check</button>`}
+    <div id="fbslot">${q.done?fbHTML(q,n):""}</div>
+    <button class="cta alt" id="quit">Quit round</button>`;
+  document.querySelectorAll(".key").forEach(k=>k.onclick=()=>press(k.dataset.k));
+  if($("#check")) $("#check").onclick=checkTyped;
+  $("#dplay").onclick = spellPlay;
+  wireSpeed("spell");
+  wireNext();
+  $("#quit").onclick = ()=>{ st.quiz=null; render(); };
+}
 
 function renderResult(){
-  const q = st.quiz;
+  const q = st.quiz, sec = S();
   stopDict();
-  const key = q.mode+st.scope;
-  if(st.best[key]==null || q.score>st.best[key]){
-    st.best[key]=q.score;
-    try{ localStorage.setItem("zahlen-best",JSON.stringify(st.best)); }catch(e){}
-  }
   const r = q.score/q.qs.length;
   const msg = r===1?"Perfect!":r>=.7?"Very good!":r>=.4?"You are on the right track.":"Review and try again.";
   const missed = [...new Set(q.missed)].sort((a,b)=>a-b);
+  const label = n => q.mode==="spell" ? WORDS[n][0]+" = "+WORDS[n][1]
+                   : isDict(q.mode) ? (Array.isArray(n)?n.join(" · "):n)
+                   : sec.disp(n)+" = "+sec.name(n);
   $("#view").innerHTML = `<div class="result">
     <div class="big">${q.score}/${q.qs.length}</div><p>${msg}</p>
-    ${missed.length?`<p>To review:</p><div class="miss">${missed.map(n=>`<span>${isDict(q.mode)?(Array.isArray(n)?n.join(" · "):n):n+" = "+N[n][0]}</span>`).join("")}</div>`:""}
+    ${missed.length?`<p>To review:</p><div class="miss">${missed.map(n=>`<span>${label(n)}</span>`).join("")}</div>`:""}
     </div>
     <button class="cta" id="again">Another round</button>
     <button class="cta alt" id="menu">Change mode</button>
@@ -552,7 +728,11 @@ function renderResult(){
 
 function setTab(t){ st.tab=t; if(t==="learn") st.quiz=null; render(); window.scrollTo(0,0); }
 function render(){
-  if(!(st.quiz && isDict(st.quiz.mode) && st.tab==="practice")) stopDict();
+  if(!st.sec){ stopDict(); return renderHome(); }
+  if(!(st.quiz && isAuto(st.quiz.mode) && st.tab==="practice")) stopDict();
+  $("#nav").hidden = false;
+  $("#sub").hidden = true;
+  $("#sectitle").textContent = S().title;
   document.body.classList.toggle("quiz", st.tab==="practice" && !!st.quiz);
   $("#tab-learn").setAttribute("aria-selected", st.tab==="learn");
   $("#tab-practice").setAttribute("aria-selected", st.tab==="practice");
@@ -563,6 +743,7 @@ function render(){
 }
 $("#tab-learn").onclick=()=>setTab("learn");
 $("#tab-practice").onclick=()=>setTab("practice");
+$("#home").onclick=goHome;
 render();
 </script>
 </body>
